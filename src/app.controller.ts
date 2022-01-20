@@ -3,6 +3,7 @@ import {
 	Body,
 	Controller,
 	Get,
+	Param,
 	Post,
 	Req,
 	Res,
@@ -13,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
+import { NotFoundError } from 'rxjs';
 
 @Controller('api')
 export class AppController {
@@ -87,6 +89,21 @@ export class AppController {
 		} catch (e) {
 			throw new UnauthorizedException();
 		}
+	}
+
+	@Get('user/:username')
+	async getUser(@Param('username') username: string) {
+		const user = await this.appService.findOne({ username });
+
+		if (!user) {
+			throw new BadRequestException('User not found');
+		}
+
+		const { id, passwordHash, ...userData } = user;
+
+		return {
+			userData,
+		};
 	}
 
 	@Post('logout')
