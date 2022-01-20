@@ -30,7 +30,7 @@ export class AppController {
 		const hashedPassword = await bcrypt.hash(password, 12);
 
 		const user = await this.appService.create({
-			username,
+			username: username.toLowerCase(),
 			id: nanoid(8),
 			passwordHash: hashedPassword,
 			avatar:
