@@ -77,18 +77,20 @@ export class AppService {
 		return newFile;
 	}
 
-	async downloadFile(id: string) {
-		const file = await this.mapRepository.findOne({ id });
-		const s3 = new S3();
-		const download = await s3
-			.getObject({
-				Bucket: process.env.S3_BUCKET,
-				Key: `${file.id}.zip`,
-			})
-			.promise();
+	// async downloadFile(id: string) {
+	// 	const file = await this.mapRepository.findOne({ id });
+	// 	const s3 = new S3();
+	// 	const download = await s3
+	// 		.getObject({
+	// 			Bucket: process.env.S3_BUCKET,
+	// 			Key: `${file.id}.zip`,
+	// 		})
+	// 		.promise();
 
-		console.log(download);
-	}
+	// 	console.log(download)
+	// 	return download
+
+	// }
 
 	async addMap(
 		id: string,

@@ -10,6 +10,7 @@ import {
 	Put,
 	Req,
 	Res,
+	StreamableFile,
 	UnauthorizedException,
 	UploadedFile,
 	UseInterceptors,
@@ -22,6 +23,9 @@ import { Response, Request } from 'express';
 import { UpdateUserDto } from './Dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
+import { Stream } from 'stream';
+import { createReadStream, read } from 'fs';
+import { join } from 'path/posix';
 
 @Controller('api')
 export class AppController {
@@ -270,12 +274,15 @@ export class AppController {
 		// get file information
 	}
 
-	@Get('map/:id/download')
-	@Header('Content-type', 'application/zip')
-	async downloadMap(@Param('id') id: string) {
-		const file = await this.appService.downloadFile(id);
-		return file;
-	}
+	// @Get('map/:id/download')
+	// async getFile(
+	// 	@Res({ passthrough: true }) res,
+	// 	@Param('id') id: string,
+	// ): Promise<StreamableFile> {
+	// 	const file = await this.appService.downloadFile(id);
+	// 	const readStream = createReadStream(join(process.cwd()));
+	// 	return new StreamableFile(readStream);
+	// }
 
 	@Post('map/:id/delete')
 	async deleteMap(@Param('id') id: string, @Req() request: Request) {
