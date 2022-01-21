@@ -5,6 +5,7 @@ import {
 	Get,
 	Param,
 	Post,
+	Put,
 	Req,
 	Res,
 	UnauthorizedException,
@@ -15,6 +16,7 @@ import { nanoid } from 'nanoid';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
 import { NotFoundError } from 'rxjs';
+import { UpdateUserDto } from './Dto/update-user.dto';
 
 @Controller('api')
 export class AppController {
@@ -37,7 +39,7 @@ export class AppController {
 			passwordHash: hashedPassword,
 			avatar:
 				avatar ||
-				'https://cdn.discordapp.com/attachments/907567825776947210/933484596526452756/personal_logo.png',
+				'https://cdn.discordapp.com/attachments/907567825776947210/933846888719982602/default_avatar.png',
 		});
 
 		delete user.passwordHash;
@@ -113,5 +115,28 @@ export class AppController {
 		return {
 			message: 'Successfully logged out',
 		};
+	}
+
+	@Put('user/edit')
+	async editUser(@Req() request: Request, @Body() data: UpdateUserDto) {
+		const cookie = request.cookies['jwt'];
+
+		const data2 = await this.jwtService.verifyAsync(cookie);
+
+		if (!data2) {
+			throw new UnauthorizedException();
+		}
+
+		const user = await this.appService.findOne({ id: data2['id'] });
+
+		if (!user) {
+			throw new BadRequestException('User not found');
+		}
+
+		delete user.passwordHash;
+
+		const updated = Object.assign(user, data);
+
+		return await this.appService.update(user.id, updated);
 	}
 }
