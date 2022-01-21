@@ -14,9 +14,11 @@
 
 
 ## env.example
+```
 DB_HOST=localhost
 DB_USER=root
 DB_PW=
 DB_NAME=bhopmaps
 JWT_SECRET=
 ORIGIN_URL=http://localhost:3000
+```
