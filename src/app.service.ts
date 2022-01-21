@@ -44,6 +44,8 @@ export class AppService {
 		return await this.userRepository.delete({ id });
 	}
 
+	// Todo: Fix double uplaod
+
 	async uploadFile(dataBuffer: Buffer, filename: string) {
 		const s3 = new S3();
 		const uploadResult = await s3
