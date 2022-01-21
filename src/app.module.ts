@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './Entities/user.entity';
-import { Map } from './Entities/map.entity'
+import { Map } from './Entities/map.entity';
 import { JwtModule } from '@nestjs/jwt';
 require('dotenv').config();
 

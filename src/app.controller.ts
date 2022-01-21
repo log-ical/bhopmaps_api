@@ -4,6 +4,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	Header,
 	Param,
 	Post,
 	Put,
@@ -43,7 +44,7 @@ export class AppController {
 			passwordHash: hashedPassword,
 			avatar:
 				avatar ||
-				'https://cdn.discordapp.com/attachments/907567825776947210/933846888719982602/default_avatar.png',
+				'https://bhopmaps.s3.eu-central-1.amazonaws.com/default_avatar/default_avatar.png?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEAEaDGV1LWNlbnRyYWwtMSJGMEQCIFlOfXgOpsC00CRYA0GKH8YkqKIgTasBuftvTHf4SaOnAiBHZ2OThDs3K4%2BUOJrSronaH7uzx4Vm8qibP267wFitvSrkAggqEAAaDDUwNDc4MTU2NjA2MiIM5itSmWExKckF0HWgKsECy0TtJ1tW%2BJCrScE1h%2FZfg%2B2SSsIuApoJ01uJWtuQ%2BVoOEXR%2Bkwn2gZzgeEm9qy5w2qKJd26qGFp0l7lzg%2FZaX0DPLcwbo3z6MG5IFdK90d9ZjUonq2eWhGVyeuTo0seK451Jrmasg%2BzdEL2C3aTIPka2PClIOZWhUBRTePWP0hsE2GMFzZszVLQUCjcGjGdnJzKEoMyE5QIZAjh3VQKk7S3EW93l%2FQDUgGuf1sBer85OYH6EJmHmGBg2iLErO9AABdVY9L0GkzKFXqtZ229dGprlHFM4QrjUNIxxAhFs1gnuz2nKCLW85H5pWsLBUQRwdHlDVTXrp2XQ8VJ4jKOp5svw%2Fl0ehpSQ41ctv7RLMyqqKAI3BbV65ZPtwlrGkK10vyqZOr%2FT6sQx76CERmXwRo5t86pltUrkTViou3Y%2Bj1F9ML7sqY8GOrQCPVdX8S2JdGPvqV5xHT%2F%2Bv2OPvxYkzZ8nMXU%2ByvB0DzSLe6sNvUfm3VFGBbKN0CES7WMFfz6iTKUe6CwQCW4nrwu2Cq5jjwjXIz2%2BWpir1Rze3jZ0Q5JpnHDZ7uMvU8YQNhBLXp7Bs%2FggPnMhUehGXRMk7%2FgM7h91zVjnPgme4ydD%2Bzoo6LvQZIXE1K54BNulNXRSwDsX6AXdZK3yluqh%2F5TRSJ4pE2O5%2BZHXXoJWzShV5pZK4C61%2BoFrrJw4%2F187HqjaMbEnNh7l1ntHWSMdFJytFRN3FlxUe7IIQT%2BlUvJUEKT61NXOtLhu0vggSpQ7Pks6w5Ejit4umZFucxGFSEJS0lUdGImmjmVPu5O3zFaEvT4nr4TB9prZ4VqxZ3ghYcTeHmAGIZXhgWyCt6TrNnK6TlA%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220121T190353Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAXLB2TOBXLRSWY5L7%2F20220121%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Signature=0b69a81006409e3d2bb63067c5b3c31de8872b46f9096700cd436d1b74cca304',
 		});
 
 		delete user.passwordHash;
@@ -105,11 +106,33 @@ export class AppController {
 			throw new BadRequestException('User not found');
 		}
 
-		const { id, passwordHash, ...userData } = user;
+		const { passwordHash, ...userData } = user;
 
 		return {
 			userData,
 		};
+	}
+
+	@Get('map/:id')
+	async getMap(@Param('id') id: string) {
+		const map = await this.appService.findeOneByMapId(id);
+		if (!map) {
+			throw new BadRequestException('Map not found');
+		}
+
+		return {
+			map,
+		};
+	}
+
+	@Get('map/author/:authorId')
+	async getMapsfromAuthor(@Param('authorId') authorId: string) {
+		const maps = await this.appService.findAllMapsByAuthor(authorId);
+		if (!maps) {
+			throw new BadRequestException('Author not found or no maps');
+		}
+
+		return maps;
 	}
 
 	@Post('logout')
@@ -138,6 +161,13 @@ export class AppController {
 		}
 
 		delete user.passwordHash;
+
+		// Update map
+		const maps = await this.appService.findAllMapsByAuthor(user.id);
+
+		for (const map of maps) {
+			await this.appService.updateMapAuthor(map.id, data.username);
+		}
 
 		const updated = Object.assign(user, data);
 
@@ -174,19 +204,21 @@ export class AppController {
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
-			throw new BadRequestException(
-				'Map name must be at least 3 characters long',
-			);
+			throw new BadRequestException({
+				message: 'Map name must be at least 5 characters long',
+			});
 		}
 
 		if (mapName === null || description === null || thumbnail === null) {
-			return new BadRequestException('Missing required fields');
+			throw new BadRequestException({
+				message: 'Map name, description and thumbnail are required',
+			});
 		}
 
 		if (description.length > 300) {
-			return new BadRequestException(
-				'Description can only be 300 characters long',
-			);
+			throw new BadRequestException({
+				message: 'Description can only be 300 characters long',
+			});
 		}
 
 		if (!request.cookies['jwt']) {
@@ -236,6 +268,13 @@ export class AppController {
 		};
 
 		// get file information
+	}
+
+	@Get('map/:id/download')
+	@Header('Content-type', 'application/zip')
+	async downloadMap(@Param('id') id: string) {
+		const file = await this.appService.downloadFile(id);
+		return file;
 	}
 
 	@Post('map/:id/delete')

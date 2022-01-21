@@ -28,6 +28,14 @@ export class AppService {
 		return await this.userRepository.findOne({ id });
 	}
 
+	async findeOneByMapId(id: string): Promise<Map> {
+		return await this.mapRepository.findOne({ id });
+	}
+
+	async findAllMapsByAuthor(authorId: string): Promise<Map[]> {
+		return await this.mapRepository.find({ authorId });
+	}
+
 	async findOne(condition: any): Promise<User> {
 		return await this.userRepository.findOne(condition);
 	}
@@ -40,11 +48,15 @@ export class AppService {
 		return await this.userRepository.save(updated);
 	}
 
+	async updateMapAuthor(id: string, author: string): Promise<Map> {
+		let toUpdate = await this.mapRepository.findOne(id);
+		let updated = Object.assign(toUpdate, { author: author });
+		return await this.mapRepository.save(updated);
+	}
+
 	async delete(id: string): Promise<any> {
 		return await this.userRepository.delete({ id });
 	}
-
-	// Todo: Fix double uplaod
 
 	async uploadFile(dataBuffer: Buffer, filename: string) {
 		const s3 = new S3();
@@ -63,6 +75,19 @@ export class AppService {
 
 		await this.mapRepository.save(newFile);
 		return newFile;
+	}
+
+	async downloadFile(id: string) {
+		const file = await this.mapRepository.findOne({ id });
+		const s3 = new S3();
+		const download = await s3
+			.getObject({
+				Bucket: process.env.S3_BUCKET,
+				Key: `${file.id}.zip`,
+			})
+			.promise();
+
+		console.log(download);
 	}
 
 	async addMap(
@@ -92,7 +117,7 @@ export class AppService {
 	}
 
 	async findMap(id: string): Promise<Map> {
-		return await this.mapRepository.findOne({id});
+		return await this.mapRepository.findOne({ id });
 	}
 
 	async deleteMap(fileId: string) {
