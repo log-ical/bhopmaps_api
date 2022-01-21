@@ -180,7 +180,19 @@ export class AppController {
 		}
 
 		if (mapName === null || description === null || thumbnail === null) {
-			throw new BadRequestException('Missing required fields');
+			return new BadRequestException('Missing required fields');
+		}
+
+		if (description.length > 300) {
+			return new BadRequestException(
+				'Description can only be 300 characters long',
+			);
+		}
+
+		if (!request.cookies['jwt']) {
+			throw new UnauthorizedException(
+				'You must be logged in to create a map',
+			);
 		}
 		// get user body information
 		const cookie = request.cookies['jwt'];
