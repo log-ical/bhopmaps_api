@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
+	Delete,
 	Get,
 	Param,
 	Post,
@@ -138,5 +139,25 @@ export class AppController {
 		const updated = Object.assign(user, data);
 
 		return await this.appService.update(user.id, updated);
+	}
+
+	@Delete('user/delete')
+	async deleteUser(@Req() request: Request) {
+		const cookie = request.cookies['jwt'];
+
+		const data = await this.jwtService.verifyAsync(cookie);
+		if (!data) {
+			throw new UnauthorizedException();
+		}
+
+		const user = await this.appService.findOne({ id: data['id'] });
+		if (!user) {
+			throw new BadRequestException('User not found');
+		}
+
+		await this.appService.delete(user.id);
+		return {
+			message: 'Successfully deleted user',
+		}
 	}
 }

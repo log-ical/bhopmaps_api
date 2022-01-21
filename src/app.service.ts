@@ -34,4 +34,8 @@ export class AppService {
     return await this.userRepository.save(updated);
   }
 
+  async delete(id: string): Promise<any> {
+	return await this.userRepository.delete({ id});
+  }
+
 }
