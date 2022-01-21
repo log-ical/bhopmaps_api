@@ -196,7 +196,6 @@ export class AppController {
 		}
 
 		const dataBuffer = {
-			id: nanoid(8),
 			author: user.username,
 			authorId: user.id,
 			mapName,
@@ -210,7 +209,7 @@ export class AppController {
 		const map: any = await this.appService.uploadFile(file.buffer, mapName);
 
 		await this.appService.addMap(
-			dataBuffer.id,
+			map.id.replace('.zip', ''),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
@@ -247,5 +246,10 @@ export class AppController {
 		return {
 			message: 'Successfully deleted map',
 		};
+	}
+
+	@Get('maps')
+	async findAll(): Promise<any> {
+		return await this.appService.getAllMaps();
 	}
 }
