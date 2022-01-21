@@ -9,6 +9,8 @@
 | @POST| `/api/logout`|
 | @PUT |`/api/user/edit`|
 | @DELETE| `/api/user/delete`|
+| @POST| `/api/map/new`|
+| @POST| `/api/map/delete`|
 
 
 

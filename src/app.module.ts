@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './Entities/user.entity';
+import { Map } from './Entities/map.entity'
 import { JwtModule } from '@nestjs/jwt';
 require('dotenv').config();
 
@@ -15,10 +16,10 @@ require('dotenv').config();
 			username: process.env.DB_USER,
 			password: process.env.DB_PW,
 			database: process.env.DB_NAME,
-			entities: [User],
+			entities: [User, Map],
 			synchronize: true,
 		}),
-		TypeOrmModule.forFeature([User]),
+		TypeOrmModule.forFeature([User, Map]),
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,
 			signOptions: { expiresIn: '1d' },

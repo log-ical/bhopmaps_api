@@ -10,14 +10,17 @@ import {
 	Req,
 	Res,
 	UnauthorizedException,
+	UploadedFile,
+	UseInterceptors,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
-import { NotFoundError } from 'rxjs';
 import { UpdateUserDto } from './Dto/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 
 @Controller('api')
 export class AppController {
@@ -158,6 +161,91 @@ export class AppController {
 		await this.appService.delete(user.id);
 		return {
 			message: 'Successfully deleted user',
+		};
+	}
+
+	@Post('map/new')
+	@UseInterceptors(FileInterceptor('file'))
+	async addMap(
+		@Req() request: Request,
+		@Body('mapName') mapName: string,
+		@Body('description') description: string,
+		@Body('thumbnail') thumbnail: string,
+		@UploadedFile() file: Express.Multer.File,
+	) {
+		if (mapName.length < 5) {
+			throw new BadRequestException(
+				'Map name must be at least 3 characters long',
+			);
 		}
+
+		if (mapName === null || description === null || thumbnail === null) {
+			throw new BadRequestException('Missing required fields');
+		}
+		// get user body information
+		const cookie = request.cookies['jwt'];
+
+		const data = await this.jwtService.verifyAsync(cookie);
+		if (!data) {
+			throw new UnauthorizedException();
+		}
+
+		const user = await this.appService.findOne({ id: data['id'] });
+		if (!user) {
+			throw new BadRequestException('User not found');
+		}
+
+		const dataBuffer = {
+			id: nanoid(8),
+			author: user.username,
+			authorId: user.id,
+			mapName,
+			thumbnail,
+			description,
+			download: file.destination,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+
+		const map: any = await this.appService.uploadFile(file.buffer, mapName);
+
+		await this.appService.addMap(
+			dataBuffer.id,
+			user.username,
+			user.id,
+			dataBuffer.mapName,
+			dataBuffer.thumbnail,
+			dataBuffer.description,
+			map,
+			map.download,
+		);
+
+		return {
+			message: 'Successfully uploaded map',
+		};
+
+		// get file information
+	}
+
+	@Post('map/:id/delete')
+	async deleteMap(@Param('id') id: string, @Req() request: Request) {
+		const cookie = request.cookies['jwt'];
+
+		const data = await this.jwtService.verifyAsync(cookie);
+		if (!data) {
+			throw new UnauthorizedException();
+		}
+
+		const map = await this.appService.findMap(id);
+
+		if (data['id'] !== map.authorId) {
+			return new UnauthorizedException();
+		}
+
+		await this.appService.deleteMap(`${map.id}`);
+
+		return {
+			message: 'Successfully deleted map',
+		};
 	}
 }
