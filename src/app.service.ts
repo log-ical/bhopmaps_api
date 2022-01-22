@@ -55,7 +55,20 @@ export class AppService {
 	}
 
 	async delete(id: string): Promise<any> {
-		return await this.userRepository.delete({ id });
+		const maps = await this.mapRepository.find({ authorId: id });
+		const s3 = new S3();
+		for (let i = 0; i < maps.length; i++) {
+			await s3
+
+				.deleteObject({
+					Bucket: process.env.S3_BUCKET,
+					Key: `${maps[i].id}.zip`,
+				})
+				.promise();
+			await this.mapRepository.delete(maps[i].id);
+		}
+		await this.userRepository.delete({ id });
+		return
 	}
 
 	async uploadFile(dataBuffer: Buffer, filename: string) {

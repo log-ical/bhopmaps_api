@@ -17,7 +17,7 @@ export class User {
 	@Column()
 	passwordHash: string;
 
-	@Column()
+	@Column('varchar', {length: 500})
 	avatar: string;
 
 	@CreateDateColumn()
