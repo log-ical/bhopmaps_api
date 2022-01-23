@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './Dto/update-user.dto';
@@ -6,6 +6,7 @@ import { User } from './Entities/user.entity';
 import { Map } from './Entities/map.entity';
 import { S3 } from 'aws-sdk';
 import { nanoid } from 'nanoid';
+import fs from 'fs';
 require('dotenv').config();
 
 @Injectable()
@@ -16,10 +17,12 @@ export class AppService {
 		private mapRepository: Repository<Map>,
 	) {}
 
+	// * Creating a user
 	async create(data: any): Promise<User> {
 		return await this.userRepository.save(data);
 	}
 
+	// * Find functions
 	async findOneByUsername(username: string): Promise<User> {
 		return await this.userRepository.findOne({ username });
 	}
@@ -40,6 +43,7 @@ export class AppService {
 		return await this.userRepository.findOne(condition);
 	}
 
+	// * Updating user
 	async update(id: string, dto: UpdateUserDto): Promise<User> {
 		let toUpdate = await this.userRepository.findOne(id);
 		delete toUpdate.passwordHash;
@@ -48,12 +52,14 @@ export class AppService {
 		return await this.userRepository.save(updated);
 	}
 
+	// * Updating Mapauthor when user updates his account name
 	async updateMapAuthor(id: string, author: string): Promise<Map> {
 		let toUpdate = await this.mapRepository.findOne(id);
 		let updated = Object.assign(toUpdate, { author: author });
 		return await this.mapRepository.save(updated);
 	}
 
+	// ! Deleting an Account
 	async delete(id: string): Promise<any> {
 		const maps = await this.mapRepository.find({ authorId: id });
 		const s3 = new S3();
@@ -68,8 +74,10 @@ export class AppService {
 			await this.mapRepository.delete(maps[i].id);
 		}
 		await this.userRepository.delete({ id });
-		return
+		return;
 	}
+
+	// * Map related functions
 
 	async uploadFile(dataBuffer: Buffer, filename: string) {
 		const s3 = new S3();
@@ -83,28 +91,13 @@ export class AppService {
 
 		const newFile = this.mapRepository.create({
 			id: uploadResult.Key.replace('.zip', ''),
-			download: uploadResult.Location,
 		});
 
 		await this.mapRepository.save(newFile);
 		return newFile;
 	}
 
-	// async downloadFile(id: string) {
-	// 	const file = await this.mapRepository.findOne({ id });
-	// 	const s3 = new S3();
-	// 	const download = await s3
-	// 		.getObject({
-	// 			Bucket: process.env.S3_BUCKET,
-	// 			Key: `${file.id}.zip`,
-	// 		})
-	// 		.promise();
-
-	// 	console.log(download)
-	// 	return download
-
-	// }
-
+	// * Adding map to database
 	async addMap(
 		id: string,
 		author: string,
@@ -113,7 +106,7 @@ export class AppService {
 		thumbnail: string,
 		description: string,
 		fileBuffer: Buffer,
-		download: string,
+		gameType: string,
 	) {
 		return await this.mapRepository.save({
 			id,
@@ -123,10 +116,11 @@ export class AppService {
 			thumbnail,
 			description,
 			fileBuffer,
-			download,
+			gameType,
 		});
 	}
 
+	// * Find functions for maps
 	async getAllMaps() {
 		return await this.mapRepository.find();
 	}
@@ -135,6 +129,7 @@ export class AppService {
 		return await this.mapRepository.findOne({ id });
 	}
 
+	// ! Deleting a map
 	async deleteMap(fileId: string) {
 		const file = await this.mapRepository.findOne({ id: fileId });
 		const s3 = new S3();
@@ -145,5 +140,39 @@ export class AppService {
 			})
 			.promise();
 		await this.mapRepository.delete(fileId);
+	}
+
+	// * Downloading a map
+
+	async downloadMap(id: string) {
+		const s3 = new S3();
+
+		const mapId = id.replace('.zip', '');
+		const file = await this.mapRepository.findOne({ id: mapId });
+		if (!file) {
+			return { message: 'Map not found' };
+		}
+		const fileKey = `${file.id}.zip`;
+
+		const params = {
+			Bucket: process.env.S3_BUCKET,
+			Key: fileKey,
+			Expires: 60,
+		};
+
+		const url = await s3.getSignedUrl('getObject', params);
+
+		return {
+			url: url,
+		};
+	}
+
+	// Incrementing download count
+	async incrementDownload(id: string) {
+		const map = await this.mapRepository.findOne(id);
+		return await this.mapRepository.save({
+			id: map.id,
+			downloads: map.downloads + 1,
+		});
 	}
 }

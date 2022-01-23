@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 import { config } from 'aws-sdk';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
 require('dotenv').config();
 
 async function bootstrap() {
@@ -11,6 +12,7 @@ async function bootstrap() {
 	app.useGlobalPipes(new ValidationPipe());
 
 	app.use(cookieParser());
+	app.use(helmet());
 	app.enableCors({
 		origin: process.env.ORIGIN_URL,
 		credentials: true,

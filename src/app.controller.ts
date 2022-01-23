@@ -26,6 +26,7 @@ import { Express } from 'express';
 import { Stream } from 'stream';
 import { createReadStream, read } from 'fs';
 import { join } from 'path/posix';
+import { ResponseContent } from 'aws-sdk/clients/wafv2';
 
 @Controller('api')
 export class AppController {
@@ -205,6 +206,7 @@ export class AppController {
 		@Body('mapName') mapName: string,
 		@Body('description') description: string,
 		@Body('thumbnail') thumbnail: string,
+		@Body('gameType') gameType: string,
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
@@ -240,7 +242,9 @@ export class AppController {
 
 		const user = await this.appService.findOne({ id: data['id'] });
 		if (!user) {
-			throw new BadRequestException('User not found');
+			throw new UnauthorizedException({
+				message: 'User not found',
+			});
 		}
 
 		const dataBuffer = {
@@ -250,6 +254,7 @@ export class AppController {
 			thumbnail,
 			description,
 			download: file.destination,
+			mapType: gameType,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};
@@ -264,25 +269,38 @@ export class AppController {
 			dataBuffer.thumbnail,
 			dataBuffer.description,
 			map,
-			map.download,
+			dataBuffer.mapType,
 		);
 
 		return {
 			message: 'Successfully uploaded map',
 		};
-
-		// get file information
 	}
 
-	// @Get('map/:id/download')
-	// async getFile(
-	// 	@Res({ passthrough: true }) res,
-	// 	@Param('id') id: string,
-	// ): Promise<StreamableFile> {
-	// 	const file = await this.appService.downloadFile(id);
-	// 	const readStream = createReadStream(join(process.cwd()));
-	// 	return new StreamableFile(readStream);
-	// }
+	@Put('map/:id/download')
+	async downloadMap(
+		@Param('id') id: string,
+		@Res() res: Response,
+	): Promise<any> {
+		const map = await this.appService.findMap(id);
+		if (!map) {
+			throw new BadRequestException('Map not found');
+		}
+
+		const key = `${map.id}.zip`;
+		const file = await this.appService.downloadMap(key);
+		// Increment download count
+		await this.appService.incrementDownload(id);
+
+		res.send({
+			url: file.url,
+			status: 200,
+			message: 'Successfully downloaded map',
+			download: map.downloads,
+		});
+	}
+
+	// Incremenet map downloads
 
 	@Post('map/:id/delete')
 	async deleteMap(@Param('id') id: string, @Req() request: Request) {
@@ -290,7 +308,7 @@ export class AppController {
 
 		const data = await this.jwtService.verifyAsync(cookie);
 		if (!data) {
-			throw new UnauthorizedException();
+			return new UnauthorizedException();
 		}
 
 		const map = await this.appService.findMap(id);

@@ -17,8 +17,11 @@ export class User {
 	@Column()
 	passwordHash: string;
 
-	@Column('varchar', {length: 500})
+	@Column('varchar', { length: 500 })
 	avatar: string;
+
+	@Column({ default: false })
+	isBeta: boolean;
 
 	@CreateDateColumn()
 	createdAt: Date;

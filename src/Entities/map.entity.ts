@@ -15,7 +15,7 @@ export class Map {
 	public author: string;
 
 	@Column({ default: null })
-	authorId: string;
+	public authorId: string;
 
 	@Column({ default: null })
 	public mapName: string;
@@ -26,8 +26,11 @@ export class Map {
 	@Column('varchar', { default: null, length: 500 })
 	public description: string;
 
-	@Column({ default: null })
-	public download: string;
+	@Column({ default: 0 })
+	public downloads: number;
+
+	@Column({ default: 'css' })
+	public gameType: string;
 
 	@CreateDateColumn()
 	public createdAt: Date;
