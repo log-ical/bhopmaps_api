@@ -16,6 +16,7 @@ async function bootstrap() {
 	app.enableCors({
 		origin: process.env.ORIGIN_URL,
 		credentials: true,
+		methods: 'GET,HEAD,PUT,POST,DELETE',
 	});
 
 	config.update({
