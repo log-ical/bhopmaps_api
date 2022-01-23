@@ -19,7 +19,7 @@ require('dotenv').config();
 			password: process.env.DB_PW,
 			database: process.env.DB_NAME,
 			entities: [User, Map],
-			synchronize: true,
+			synchronize: false,
 		}),
 		TypeOrmModule.forFeature([User, Map]),
 		JwtModule.register({
