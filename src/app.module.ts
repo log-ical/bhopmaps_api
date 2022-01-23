@@ -14,11 +14,12 @@ require('dotenv').config();
 		TypeOrmModule.forRoot({
 			type: 'mysql',
 			host: process.env.DB_HOST,
-			port: 3306,
+			port: 25060,
 			username: process.env.DB_USER,
 			password: process.env.DB_PW,
 			database: process.env.DB_NAME,
 			entities: [User, Map],
+			ssl: true,
 			synchronize: false,
 		}),
 		TypeOrmModule.forFeature([User, Map]),
