@@ -19,7 +19,6 @@ require('dotenv').config();
 			password: process.env.DB_PW,
 			database: process.env.DB_NAME,
 			entities: [User, Map],
-			ssl: true,
 			synchronize: false,
 		}),
 		TypeOrmModule.forFeature([User, Map]),
