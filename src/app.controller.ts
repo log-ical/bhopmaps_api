@@ -29,6 +29,7 @@ import { createReadStream, read } from 'fs';
 import { join } from 'path/posix';
 import { ResponseContent } from 'aws-sdk/clients/wafv2';
 import { AuthGuard } from '@nestjs/passport';
+import { toUnicode } from 'punycode';
 
 @Controller('api')
 export class AppController {
@@ -80,7 +81,7 @@ export class AppController {
 
 		const jwt = await this.jwtService.signAsync({ id: user.id });
 
-		response.cookie('jwt', jwt, { httpOnly: false });
+		response.cookie('jwt', jwt, {secure: true, sameSite: 'strict'});
 
 		return {
 			message: 'Successfully logged in',
