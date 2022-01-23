@@ -157,7 +157,7 @@ export class AppService {
 		const params = {
 			Bucket: process.env.S3_BUCKET,
 			Key: fileKey,
-			Expires: 60,
+			Expires: 3,
 		};
 
 		const url = await s3.getSignedUrl('getObject', params);
