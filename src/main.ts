@@ -14,7 +14,7 @@ async function bootstrap() {
 	app.use(cookieParser());
 	app.use(helmet());
 	app.enableCors({
-		origin: process.env.ORIGIN_URL,
+		origin: process.env.ORIGIN_URL || 'https://beta-bhopmaps.vercel.app/',
 		credentials: true,
 	});
 
