@@ -55,7 +55,7 @@ export class AppController {
 				avatar ||
 				'https://cdn.discordapp.com/attachments/907567825776947210/933846888719982602/default_avatar.png',
 			isBeta: true,
-			betaKey: process.env.API_KEY
+			betaKey: process.env.API_KEY,
 		});
 
 		delete user.passwordHash;
@@ -81,7 +81,7 @@ export class AppController {
 
 		const jwt = await this.jwtService.signAsync({ id: user.id });
 
-		response.cookie('jwt', jwt, { sameSite: 'none'});
+		response.cookie('jwt', jwt, { sameSite: 'none', secure: true });
 
 		return {
 			message: 'Successfully logged in',
