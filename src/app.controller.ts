@@ -13,6 +13,7 @@ import {
 	StreamableFile,
 	UnauthorizedException,
 	UploadedFile,
+	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common';
 import { AppService } from './app.service';
@@ -27,6 +28,7 @@ import { Stream } from 'stream';
 import { createReadStream, read } from 'fs';
 import { join } from 'path/posix';
 import { ResponseContent } from 'aws-sdk/clients/wafv2';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('api')
 export class AppController {
@@ -36,6 +38,7 @@ export class AppController {
 	) {}
 
 	@Post('register')
+	@UseGuards(AuthGuard('api-key'))
 	async register(
 		@Body('username') username: string,
 		@Body('password') password: string,
@@ -50,6 +53,8 @@ export class AppController {
 			avatar:
 				avatar ||
 				'https://cdn.discordapp.com/attachments/907567825776947210/933846888719982602/default_avatar.png',
+			isBeta: true,
+			betaKey: process.env.API_KEY
 		});
 
 		delete user.passwordHash;
@@ -278,6 +283,7 @@ export class AppController {
 	}
 
 	@Put('map/:id/download')
+	@UseGuards(AuthGuard('api-key'))
 	async downloadMap(
 		@Param('id') id: string,
 		@Res() res: Response,

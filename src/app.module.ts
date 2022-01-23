@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './Entities/user.entity';
 import { Map } from './Entities/map.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth.module';
 require('dotenv').config();
 
 @Module({
@@ -24,6 +26,8 @@ require('dotenv').config();
 			secret: process.env.JWT_SECRET,
 			signOptions: { expiresIn: '1d' },
 		}),
+		ConfigModule.forRoot(),
+		AuthModule
 	],
 	controllers: [AppController],
 	providers: [AppService],

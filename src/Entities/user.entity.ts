@@ -22,6 +22,9 @@ export class User {
 
 	@Column({ default: false })
 	isBeta: boolean;
+	
+	@Column({default: null})
+	betaKey: string;
 
 	@CreateDateColumn()
 	createdAt: Date;
