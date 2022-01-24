@@ -112,7 +112,7 @@ export class AppController {
 			throw new BadRequestException('User not found');
 		}
 
-		const { passwordHash, ...userData } = user;
+		const { betaKey, passwordHash, ...userData } = user;
 
 		return {
 			userData,
