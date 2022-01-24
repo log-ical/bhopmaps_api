@@ -4,13 +4,11 @@ import {
 	Controller,
 	Delete,
 	Get,
-	Header,
 	Param,
 	Post,
 	Put,
 	Req,
 	Res,
-	StreamableFile,
 	UnauthorizedException,
 	UploadedFile,
 	UseGuards,
@@ -24,12 +22,8 @@ import { Response, Request } from 'express';
 import { UpdateUserDto } from './Dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-import { Stream } from 'stream';
-import { createReadStream, read } from 'fs';
-import { join } from 'path/posix';
-import { ResponseContent } from 'aws-sdk/clients/wafv2';
 import { AuthGuard } from '@nestjs/passport';
-import { toUnicode } from 'punycode';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('api')
 export class AppController {
@@ -89,6 +83,7 @@ export class AppController {
 	}
 
 	@Get('user')
+	@SkipThrottle()
 	async user(@Req() request: Request) {
 		try {
 			const cookie = request.cookies['jwt'];

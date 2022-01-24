@@ -7,6 +7,7 @@ import { Map } from './Entities/map.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 require('dotenv').config();
 
 @Module({
@@ -27,7 +28,11 @@ require('dotenv').config();
 			signOptions: { expiresIn: '1d' },
 		}),
 		ConfigModule.forRoot(),
-		AuthModule
+		AuthModule,
+		ThrottlerModule.forRoot({
+			ttl: 60,
+			limit: 10,
+		}),
 	],
 	controllers: [AppController],
 	providers: [AppService],
