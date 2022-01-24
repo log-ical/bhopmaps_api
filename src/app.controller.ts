@@ -222,9 +222,9 @@ export class AppController {
 			});
 		}
 
-		if (description.length > 300) {
+		if (description.length > 1000) {
 			throw new BadRequestException({
-				message: 'Description can only be 300 characters long',
+				message: 'Description can only be 1000 characters long',
 			});
 		}
 

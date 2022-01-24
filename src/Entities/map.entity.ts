@@ -23,7 +23,7 @@ export class Map {
 	@Column({ default: null })
 	public thumbnail: string;
 
-	@Column('varchar', { default: null, length: 500 })
+	@Column('varchar', { default: null, length: 1000 })
 	public description: string;
 
 	@Column({ default: 0 })
