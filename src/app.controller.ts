@@ -201,6 +201,7 @@ export class AppController {
 	}
 
 	@Post('map/new')
+	@SkipThrottle()
 	@UseInterceptors(FileInterceptor('file'))
 	async addMap(
 		@Req() request: Request,
