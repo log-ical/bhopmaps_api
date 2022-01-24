@@ -207,7 +207,7 @@ export class AppController {
 		@Body('mapName') mapName: string,
 		@Body('description') description: string,
 		@Body('gameType') gameType: string,
-		@Body('thumbnail') thumbnail: Express.Multer.File,
+		@UploadedFile() thumbnail: Express.Multer.File,
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
