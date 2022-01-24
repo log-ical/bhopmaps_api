@@ -112,6 +112,24 @@ export class AppService {
 		return newFile;
 	}
 
+	// Upload thumbnail and update map thumbnail
+	async uploadThumbnail(id: string, thumbnail: string) {
+		const s3 = new S3();
+		const fileKey = `${nanoid()}.png`;
+		const params = {
+			Bucket: process.env.S3_BUCKET,
+			Key: fileKey,
+			Body: thumbnail,
+			ContentType: 'image/png',
+		};
+		await s3.upload(params).promise();
+		return await this.mapRepository.save({
+			id,
+			thumbnail: fileKey,
+		});
+	}
+	
+
 	// * Adding map to database
 	async addMap(
 		id: string,

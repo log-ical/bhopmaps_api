@@ -209,6 +209,7 @@ export class AppController {
 		@Body('thumbnail') thumbnail: string,
 		@Body('gameType') gameType: string,
 		@UploadedFile() file: Express.Multer.File,
+		@UploadedFile() thumbnailFile: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
 			throw new BadRequestException({
@@ -261,13 +262,14 @@ export class AppController {
 		};
 
 		const map: any = await this.appService.uploadFile(file.buffer, mapName);
+		const thumbnailImage: any = await this.appService.uploadThumbnail(map.id.replace('.zip', ''), thumbnailFile.destination);	
 
 		await this.appService.addMap(
 			map.id.replace('.zip', ''),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
-			dataBuffer.thumbnail,
+			thumbnailImage || dataBuffer.thumbnail,
 			dataBuffer.description,
 			map,
 			dataBuffer.mapType,
