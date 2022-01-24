@@ -43,6 +43,8 @@ export class AppService {
 		return await this.userRepository.findOne(condition);
 	}
 
+	
+
 	// * Updating user
 	async update(id: string, dto: UpdateUserDto): Promise<User> {
 		let toUpdate = await this.userRepository.findOne(id);
@@ -91,6 +93,24 @@ export class AppService {
 
 		const newFile = this.mapRepository.create({
 			id: uploadResult.Key.replace('.zip', ''),
+		});
+
+		await this.mapRepository.save(newFile);
+		return newFile;
+	}
+
+	async uploadThumbnail(dataBuffer: Buffer, thumbnailId: string) {
+		const s3 = new S3();
+		const uploadResult = await s3
+			.upload({
+				Bucket: process.env.S3_BUCKET,
+				Body: dataBuffer,
+				Key: `${nanoid(8)}.png`,
+			})
+			.promise();
+
+		const newFile = this.mapRepository.create({
+			thumbnail: uploadResult.Key,
 		});
 
 		await this.mapRepository.save(newFile);

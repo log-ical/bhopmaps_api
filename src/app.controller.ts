@@ -151,7 +151,7 @@ export class AppController {
 	}
 
 	@Put('user/edit')
-	async editUser(@Req() request: Request, @Body() data: UpdateUserDto) {
+	async editUser(@Req() request: Request, @Body() data: UpdateUserDto, @UploadedFile() file?: Express.Multer.File) {
 		const cookie = request.cookies['jwt'];
 
 		const data2 = await this.jwtService.verifyAsync(cookie);
@@ -206,8 +206,8 @@ export class AppController {
 		@Req() request: Request,
 		@Body('mapName') mapName: string,
 		@Body('description') description: string,
-		@Body('thumbnail') thumbnail: string,
 		@Body('gameType') gameType: string,
+		@Body('thumbnail') thumbnail: Express.Multer.File,
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
@@ -252,7 +252,7 @@ export class AppController {
 			author: user.username,
 			authorId: user.id,
 			mapName,
-			thumbnail,
+			thumbnail: thumbnail.destination,
 			description,
 			download: file.destination,
 			mapType: gameType,
@@ -261,13 +261,14 @@ export class AppController {
 		};
 
 		const map: any = await this.appService.uploadFile(file.buffer, mapName);
+		const image: any = await this.appService.uploadThumbnail(thumbnail.buffer, thumbnail.filename);
 
 		await this.appService.addMap(
 			map.id.replace('.zip', ''),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
-			dataBuffer.thumbnail,
+			image,
 			dataBuffer.description,
 			map,
 			dataBuffer.mapType,
