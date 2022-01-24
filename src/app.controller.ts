@@ -207,7 +207,7 @@ export class AppController {
 		@Body('mapName') mapName: string,
 		@Body('description') description: string,
 		@Body('gameType') gameType: string,
-		@UploadedFile() thumbnail: Express.Multer.File,
+		@Body('thumbnail') thumbnail: string,
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
@@ -252,7 +252,7 @@ export class AppController {
 			author: user.username,
 			authorId: user.id,
 			mapName,
-			thumbnail: thumbnail.destination,
+			thumbnail,
 			description,
 			download: file.destination,
 			mapType: gameType,
@@ -261,14 +261,13 @@ export class AppController {
 		};
 
 		const map: any = await this.appService.uploadFile(file.buffer, mapName);
-		const image: any = await this.appService.uploadThumbnail(thumbnail.buffer, thumbnail.filename);
 
 		await this.appService.addMap(
 			map.id.replace('.zip', ''),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
-			image,
+			dataBuffer.thumbnail,
 			dataBuffer.description,
 			map,
 			dataBuffer.mapType,
