@@ -201,35 +201,36 @@ export class AppController {
 	}
 
 	@Post('map/new')
+	@SkipThrottle()
 	@UseInterceptors(FileInterceptor('file'))
 	async addMap(
 		@Req() request: Request,
 		@Body('mapName') mapName: string,
 		@Body('description') description: string,
+		@Body('thumbnail') thumbnail: string,
 		@Body('gameType') gameType: string,
 		@UploadedFile() file: Express.Multer.File,
-		@UploadedFile() thumbnail: Express.Multer.File
 	) {
 		if (mapName.length < 5) {
-			return new BadRequestException({
+			throw new BadRequestException({
 				message: 'Map name must be at least 5 characters long',
 			});
 		}
 
 		if (mapName === null || description === null || thumbnail === null) {
-			return new BadRequestException({
+			throw new BadRequestException({
 				message: 'Map name, description and thumbnail are required',
 			});
 		}
 
 		if (description.length > 300) {
-			return new BadRequestException({
+			throw new BadRequestException({
 				message: 'Description can only be 300 characters long',
 			});
 		}
 
 		if (!request.cookies['jwt']) {
-			return new UnauthorizedException(
+			throw new UnauthorizedException(
 				'You must be logged in to create a map',
 			);
 		}
@@ -238,12 +239,12 @@ export class AppController {
 
 		const data = await this.jwtService.verifyAsync(cookie);
 		if (!data) {
-			return new UnauthorizedException();
+			throw new UnauthorizedException();
 		}
 
 		const user = await this.appService.findOne({ id: data['id'] });
 		if (!user) {
-			return new UnauthorizedException({
+			throw new UnauthorizedException({
 				message: 'User not found',
 			});
 		}
@@ -261,14 +262,13 @@ export class AppController {
 		};
 
 		const map: any = await this.appService.uploadFile(file.buffer, mapName);
-		const image: any = await this.appService.uploadThumbnailFile(thumbnail.buffer, thumbnail.originalname);
 
 		await this.appService.addMap(
 			map.id.replace('.zip', ''),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
-			image,
+			dataBuffer.thumbnail,
 			dataBuffer.description,
 			map,
 			dataBuffer.mapType,
