@@ -206,8 +206,8 @@ export class AppController {
 		@Req() request: Request,
 		@Body('mapName') mapName: string,
 		@Body('description') description: string,
-		@Body('gameType') gameType: string,
 		@Body('thumbnail') thumbnail: string,
+		@Body('gameType') gameType: string,
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
@@ -254,7 +254,6 @@ export class AppController {
 			mapName,
 			thumbnail,
 			description,
-			download: file.destination,
 			mapType: gameType,
 			createdAt: new Date(),
 			updatedAt: new Date(),
