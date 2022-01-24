@@ -113,7 +113,7 @@ export class AppService {
 	}
 
 	// Upload thumbnail and update map thumbnail
-	async uploadThumbnail(id: string, thumbnail: string) {
+	async uploadThumbnail(id: string, thumbnail: Buffer) {
 		const s3 = new S3();
 		const fileKey = `${nanoid()}.png`;
 		const params = {
@@ -128,7 +128,7 @@ export class AppService {
 			thumbnail: fileKey,
 		});
 	}
-	
+
 
 	// * Adding map to database
 	async addMap(
