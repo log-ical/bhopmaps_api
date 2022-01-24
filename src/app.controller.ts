@@ -186,12 +186,12 @@ export class AppController {
 
 		const data = await this.jwtService.verifyAsync(cookie);
 		if (!data) {
-			throw new UnauthorizedException();
+			return new UnauthorizedException();
 		}
 
 		const user = await this.appService.findOne({ id: data['id'] });
 		if (!user) {
-			throw new BadRequestException('User not found');
+			return new BadRequestException('User not found');
 		}
 
 		await this.appService.delete(user.id);
@@ -209,28 +209,27 @@ export class AppController {
 		@Body('thumbnail') thumbnail: string,
 		@Body('gameType') gameType: string,
 		@UploadedFile() file: Express.Multer.File,
-		@UploadedFile() thumbnailFile: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
-			throw new BadRequestException({
+			return new BadRequestException({
 				message: 'Map name must be at least 5 characters long',
 			});
 		}
 
 		if (mapName === null || description === null || thumbnail === null) {
-			throw new BadRequestException({
+			return new BadRequestException({
 				message: 'Map name, description and thumbnail are required',
 			});
 		}
 
 		if (description.length > 1000) {
-			throw new BadRequestException({
+			return new BadRequestException({
 				message: 'Description can only be 1000 characters long',
 			});
 		}
 
 		if (!request.cookies['jwt']) {
-			throw new UnauthorizedException(
+			return new UnauthorizedException(
 				'You must be logged in to create a map',
 			);
 		}
@@ -239,12 +238,12 @@ export class AppController {
 
 		const data = await this.jwtService.verifyAsync(cookie);
 		if (!data) {
-			throw new UnauthorizedException();
+			return new UnauthorizedException();
 		}
 
 		const user = await this.appService.findOne({ id: data['id'] });
 		if (!user) {
-			throw new UnauthorizedException({
+			return new UnauthorizedException({
 				message: 'User not found',
 			});
 		}
@@ -262,14 +261,14 @@ export class AppController {
 		};
 
 		const map: any = await this.appService.uploadFile(file.buffer, mapName);
-		const thumbnailImage: any = await this.appService.uploadThumbnail(map.id.replace('.zip', ''), thumbnailFile.buffer);	
+		// const thumbnailImage: any = await this.appService.uploadThumbnail(map.id.replace('.zip', ''), thumbnailFile.buffer);	
 
 		await this.appService.addMap(
 			map.id.replace('.zip', ''),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
-			thumbnailImage || dataBuffer.thumbnail,
+			dataBuffer.thumbnail,
 			dataBuffer.description,
 			map,
 			dataBuffer.mapType,
