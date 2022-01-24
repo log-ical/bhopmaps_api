@@ -151,7 +151,7 @@ export class AppController {
 	}
 
 	@Put('user/edit')
-	async editUser(@Req() request: Request, @Body() data: UpdateUserDto, @UploadedFile() file?: Express.Multer.File) {
+	async editUser(@Req() request: Request, @Body() data: UpdateUserDto) {
 		const cookie = request.cookies['jwt'];
 
 		const data2 = await this.jwtService.verifyAsync(cookie);
