@@ -186,12 +186,12 @@ export class AppController {
 
 		const data = await this.jwtService.verifyAsync(cookie);
 		if (!data) {
-			return new UnauthorizedException();
+			throw new UnauthorizedException();
 		}
 
 		const user = await this.appService.findOne({ id: data['id'] });
 		if (!user) {
-			return new BadRequestException('User not found');
+			throw new BadRequestException('User not found');
 		}
 
 		await this.appService.delete(user.id);
@@ -211,25 +211,25 @@ export class AppController {
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		if (mapName.length < 5) {
-			return new BadRequestException({
+			throw new BadRequestException({
 				message: 'Map name must be at least 5 characters long',
 			});
 		}
 
 		if (mapName === null || description === null || thumbnail === null) {
-			return new BadRequestException({
+			throw new BadRequestException({
 				message: 'Map name, description and thumbnail are required',
 			});
 		}
 
 		if (description.length > 1000) {
-			return new BadRequestException({
+			throw new BadRequestException({
 				message: 'Description can only be 1000 characters long',
 			});
 		}
 
 		if (!request.cookies['jwt']) {
-			return new UnauthorizedException(
+			throw new UnauthorizedException(
 				'You must be logged in to create a map',
 			);
 		}
@@ -238,12 +238,12 @@ export class AppController {
 
 		const data = await this.jwtService.verifyAsync(cookie);
 		if (!data) {
-			return new UnauthorizedException();
+			throw new UnauthorizedException();
 		}
 
 		const user = await this.appService.findOne({ id: data['id'] });
 		if (!user) {
-			return new UnauthorizedException({
+			throw new UnauthorizedException({
 				message: 'User not found',
 			});
 		}
