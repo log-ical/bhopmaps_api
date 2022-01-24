@@ -254,6 +254,7 @@ export class AppController {
 			mapName,
 			thumbnail,
 			description,
+			download: file.destination,
 			mapType: gameType,
 			createdAt: new Date(),
 			updatedAt: new Date(),
