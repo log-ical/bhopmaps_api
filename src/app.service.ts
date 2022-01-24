@@ -81,6 +81,19 @@ export class AppService {
 
 	// * Map related functions
 
+	async uploadThumbnailFile(fileBuffer: Buffer, filename: string) {
+		const s3 = new S3();
+		const fileKey = `${nanoid()}.png`;
+		const params = {
+			Bucket: process.env.S3_BUCKET,
+			Key: fileKey,
+			Body: fileBuffer,
+			ContentType: 'image/png',
+		};
+		await s3.upload(params).promise();
+		return fileKey;
+	}
+
 	async uploadFile(dataBuffer: Buffer, filename: string) {
 		const s3 = new S3();
 		const uploadResult = await s3
