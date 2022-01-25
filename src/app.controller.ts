@@ -331,4 +331,20 @@ export class AppController {
 	async findAll(): Promise<any> {
 		return await this.appService.getAllMaps();
 	}
+
+	@Get('/users')
+	async findAllUsers(): Promise<any> {
+		const users = await this.appService.findAllUsers()
+		for (const user of users) {
+			delete user.passwordHash;
+			delete user.id
+			delete user.createdAt
+			delete user.updatedAt
+			delete user.betaKey
+			delete user.isBeta
+		}
+
+		return users;
+
+	}
 }
