@@ -34,7 +34,7 @@ export class AppController {
 	) {}
 
 	@Post('register')
-	@UseGuards(AuthGuard('api-key'))
+	// @UseGuards(AuthGuard('api-key'))
 	async register(
 		@Body('username') username: string,
 		@Body('password') password: string,
@@ -280,7 +280,7 @@ export class AppController {
 	}
 
 	@Put('map/:id/download')
-	@UseGuards(AuthGuard('api-key'))
+	// @UseGuards(AuthGuard('api-key'))
 	async downloadMap(
 		@Param('id') id: string,
 		@Res() res: Response,
