@@ -327,42 +327,6 @@ export class AppController {
 		};
 	}
 
-	// Upload thumbnail
-	@Post('map/upload/thumbnail')
-	@UseInterceptors(FileInterceptor('file'))
-	async uploadThumbnail(
-		@Req() request: Request,
-		@Body('id') id: string,
-		@UploadedFile() file: Express.Multer.File,
-	) {
-		// if (!request.cookies['jwt']) {
-		// 	throw new UnauthorizedException(
-		// 		'You must be logged in to create a map',
-		// 	);
-		// }
-		// // get user body information
-		// const cookie = request.cookies['jwt'];
-
-		// const data = await this.jwtService.verifyAsync(cookie);
-		// if (!data) {
-		// 	throw new UnauthorizedException();
-		// }
-
-		// const user = await this.appService.findOne({ id: data['id'] });
-
-		// if (!user) {
-		// 	throw new UnauthorizedException();
-		// }
-		await this.appService.uploadThumbnail(
-			id,
-			file.buffer,
-		);
-
-		return {
-			url: ``,
-		};
-	}
-
 	@Get('maps')
 	async findAll(): Promise<any> {
 		return await this.appService.getAllMaps();

@@ -158,8 +158,7 @@ export class AppService {
 	async getAllMaps() {
 		return await this.mapRepository
 			.createQueryBuilder('map')
-			.leftJoin('map.createdAt', 'createdAt')
-			.orderBy('createdAt.createdAt', 'DESC')
+			.orderBy('map.createdAt', 'DESC')
 			.getMany();
 	}
 
