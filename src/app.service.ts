@@ -153,7 +153,10 @@ export class AppService {
 
 	// * Find functions for maps
 	async getAllMaps() {
-		return await this.mapRepository.find();
+		return await this.mapRepository.createQueryBuilder('map')
+		.leftJoin('map.createdAt', 'createdAt')
+		.orderBy('createdAt.createdAt', 'DESC')
+		.getMany();
 	}
 
 	async findMap(id: string): Promise<Map> {
