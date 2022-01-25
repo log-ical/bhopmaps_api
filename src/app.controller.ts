@@ -49,8 +49,7 @@ export class AppController {
 			avatar:
 				avatar ||
 				'https://cdn.discordapp.com/attachments/907567825776947210/933846888719982602/default_avatar.png',
-			isBeta: true,
-			betaKey: process.env.API_KEY,
+			isBeta: false,
 		});
 
 		delete user.passwordHash;
