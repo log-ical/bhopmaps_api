@@ -6,7 +6,7 @@ import { User } from './Entities/user.entity';
 import { Map } from './Entities/map.entity';
 import { S3 } from 'aws-sdk';
 import { nanoid } from 'nanoid';
-import fs from 'fs';
+
 require('dotenv').config();
 
 @Injectable()
@@ -42,8 +42,6 @@ export class AppService {
 	async findOne(condition: any): Promise<User> {
 		return await this.userRepository.findOne(condition);
 	}
-
-	
 
 	// * Updating user
 	async update(id: string, dto: UpdateUserDto): Promise<User> {
@@ -112,24 +110,6 @@ export class AppService {
 		return newFile;
 	}
 
-	// Upload thumbnail and update map thumbnail
-	// async uploadThumbnail(id: string, thumbnail: Buffer) {
-	// 	const s3 = new S3();
-	// 	const fileKey = `${nanoid()}.png`;
-	// 	const params = {
-	// 		Bucket: process.env.S3_BUCKET,
-	// 		Key: fileKey,
-	// 		Body: thumbnail,
-	// 		ContentType: 'image/png',
-	// 	};
-	// 	await s3.upload(params).promise();
-	// 	return await this.mapRepository.save({
-	// 		id,
-	// 		thumbnail: fileKey,
-	// 	});
-	// }
-
-
 	// * Adding map to database
 	async addMap(
 		id: string,
@@ -150,8 +130,26 @@ export class AppService {
 			description,
 			fileBuffer,
 			gameType,
+			bhopmapsUrl: `${process.env.ORIGIN_URL}/maps/${id}`,
 		});
 	}
+
+	// Upload thumbnail and update map thumbnail
+	// async uploadThumbnail(id: string, thumbnail: Buffer) {
+	// 	const s3 = new S3();
+	// 	const fileKey = `${nanoid()}.png`;
+	// 	const params = {
+	// 		Bucket: process.env.S3_BUCKET,
+	// 		Key: fileKey,
+	// 		Body: thumbnail,
+	// 		ContentType: 'image/png',
+	// 	};
+	// 	await s3.upload(params).promise();
+	// 	return await this.mapRepository.save({
+	// 		id,
+	// 		thumbnail: fileKey,
+	// 	});
+	// }
 
 	// * Find functions for maps
 	async getAllMaps() {

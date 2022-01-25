@@ -32,6 +32,9 @@ export class Map {
 	@Column({ default: 'css' })
 	public gameType: string;
 
+	@Column({ default: null })
+	public bhopmapsUrl: string;
+
 	@CreateDateColumn()
 	public createdAt: Date;
 
