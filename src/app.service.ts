@@ -143,7 +143,7 @@ export class AppService {
 			Bucket: process.env.S3_BUCKET,
 			Key: fileKey,
 			Body: thumbnail,
-			ContentType: 'image/png',
+			ContentType: 'image/*',
 		};
 		await s3.upload(params).promise();
 

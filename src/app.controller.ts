@@ -264,7 +264,7 @@ export class AppController {
 		const thumbnailImage: any = await this.appService.uploadThumbnail(map.id.replace('.zip', ''), files.thumbnail[0].buffer);
 
 		await this.appService.addMap(
-			map.id.replace('.zip', '').trim(),
+			map.id.replace('.zip', ''),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
