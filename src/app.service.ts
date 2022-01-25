@@ -101,9 +101,11 @@ export class AppService {
 				Key: `${nanoid(8)}.zip`,
 			})
 			.promise();
+;
+			const mapId = uploadResult.Key.replace('.zip', '');
 
 		const newFile = this.mapRepository.create({
-			id: uploadResult.Key.replace('.zip', ''),
+			id: mapId,
 		});
 
 		await this.mapRepository.save(newFile);
@@ -133,30 +135,32 @@ export class AppService {
 			bhopmapsUrl: `${process.env.ORIGIN_URL}/maps/${id}`,
 		});
 	}
-
 	// Upload thumbnail and update map thumbnail
-	// async uploadThumbnail(id: string, thumbnail: Buffer) {
-	// 	const s3 = new S3();
-	// 	const fileKey = `${nanoid()}.png`;
-	// 	const params = {
-	// 		Bucket: process.env.S3_BUCKET,
-	// 		Key: fileKey,
-	// 		Body: thumbnail,
-	// 		ContentType: 'image/png',
-	// 	};
-	// 	await s3.upload(params).promise();
-	// 	return await this.mapRepository.save({
-	// 		id,
-	// 		thumbnail: fileKey,
-	// 	});
-	// }
+	async uploadThumbnail(id: string, thumbnail: Buffer) {
+		const s3 = new S3();
+		const fileKey = `images/${id}.png`;
+		const params = {
+			Bucket: process.env.S3_BUCKET,
+			Key: fileKey,
+			Body: thumbnail,
+			ContentType: 'image/png',
+		};
+		await s3.upload(params).promise();
+
+		const url = await s3.getSignedUrl('getObject', {
+			Bucket: process.env.S3_BUCKET,
+			Key: fileKey,
+			});
+		return url;
+	}
 
 	// * Find functions for maps
 	async getAllMaps() {
-		return await this.mapRepository.createQueryBuilder('map')
-		.leftJoin('map.createdAt', 'createdAt')
-		.orderBy('createdAt.createdAt', 'DESC')
-		.getMany();
+		return await this.mapRepository
+			.createQueryBuilder('map')
+			.leftJoin('map.createdAt', 'createdAt')
+			.orderBy('createdAt.createdAt', 'DESC')
+			.getMany();
 	}
 
 	async findMap(id: string): Promise<Map> {
@@ -181,16 +185,16 @@ export class AppService {
 	async downloadMap(id: string) {
 		const s3 = new S3();
 
-		const mapId = id.replace('.zip', '');
+		const mapId = id
 		const file = await this.mapRepository.findOne({ id: mapId });
 		if (!file) {
 			return { message: 'Map not found' };
 		}
-		const fileKey = `${file.id}.zip`;
+		const fileKey = `${file.id.trim()}.zip`;
 
 		const params = {
 			Bucket: process.env.S3_BUCKET,
-			Key: fileKey,
+			Key: `${fileKey}`,
 			Expires: 3,
 		};
 

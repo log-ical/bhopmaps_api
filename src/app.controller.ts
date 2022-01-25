@@ -11,6 +11,7 @@ import {
 	Res,
 	UnauthorizedException,
 	UploadedFile,
+	UploadedFiles,
 	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common';
@@ -20,7 +21,7 @@ import { nanoid } from 'nanoid';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
 import { UpdateUserDto } from './Dto/update-user.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -201,14 +202,19 @@ export class AppController {
 	}
 
 	@Post('map/new')
-	@UseInterceptors(FileInterceptor('file'))
+	@UseInterceptors(FileFieldsInterceptor([
+		{ name: 'thumbnail', maxCount: 1},
+		{ name: 'file', maxCount: 1},
+	]))
 	async addMap(
 		@Req() request: Request,
 		@Body('mapName') mapName: string,
 		@Body('description') description: string,
-		@Body('thumbnail') thumbnail: string,
+		// @Body('thumbnail') thumbnail: string,
 		@Body('gameType') gameType: string,
-		@UploadedFile() file: Express.Multer.File,
+		// @UploadedFile() file: Express.Multer.File,
+		// @UploadedFile() thumbnail: Express.Multer.File,
+		@UploadedFiles() files: { thumbnail?: Express.Multer.File[], file?: Express.Multer.File[] },
 	) {
 		if (mapName.length < 5) {
 			throw new BadRequestException({
@@ -216,7 +222,7 @@ export class AppController {
 			});
 		}
 
-		if (mapName === null || description === null || thumbnail === null) {
+		if (mapName === null || description === null || files.thumbnail[0] === null) {
 			throw new BadRequestException({
 				message: 'Map name, description and thumbnail are required',
 			});
@@ -249,26 +255,20 @@ export class AppController {
 		}
 
 		const dataBuffer = {
-			author: user.username,
-			authorId: user.id,
 			mapName,
-			thumbnail,
 			description,
-			download: file.destination,
 			mapType: gameType,
-			createdAt: new Date(),
-			updatedAt: new Date(),
 		};
 
-		const map: any = await this.appService.uploadFile(file.buffer, mapName);
-		// const thumbnailImage: any = await this.appService.uploadThumbnail(map.id.replace('.zip', ''), thumbnailFile.buffer);	
+		const map: any = await this.appService.uploadFile(files.file[0].buffer, mapName);
+		const thumbnailImage: any = await this.appService.uploadThumbnail(map.id.replace('.zip', ''), files.thumbnail[0].buffer);
 
 		await this.appService.addMap(
-			map.id.replace('.zip', ''),
+			map.id.replace('.zip', '').trim(),
 			user.username,
 			user.id,
 			dataBuffer.mapName,
-			dataBuffer.thumbnail,
+			thumbnailImage,
 			dataBuffer.description,
 			map,
 			dataBuffer.mapType,
@@ -290,7 +290,7 @@ export class AppController {
 			throw new BadRequestException('Map not found');
 		}
 
-		const key = `${map.id}.zip`;
+		const key = map.id
 		const file = await this.appService.downloadMap(key);
 		// Increment download count
 		await this.appService.incrementDownload(id);
@@ -324,6 +324,42 @@ export class AppController {
 
 		return {
 			message: 'Successfully deleted map',
+		};
+	}
+
+	// Upload thumbnail
+	@Post('map/upload/thumbnail')
+	@UseInterceptors(FileInterceptor('file'))
+	async uploadThumbnail(
+		@Req() request: Request,
+		@Body('id') id: string,
+		@UploadedFile() file: Express.Multer.File,
+	) {
+		// if (!request.cookies['jwt']) {
+		// 	throw new UnauthorizedException(
+		// 		'You must be logged in to create a map',
+		// 	);
+		// }
+		// // get user body information
+		// const cookie = request.cookies['jwt'];
+
+		// const data = await this.jwtService.verifyAsync(cookie);
+		// if (!data) {
+		// 	throw new UnauthorizedException();
+		// }
+
+		// const user = await this.appService.findOne({ id: data['id'] });
+
+		// if (!user) {
+		// 	throw new UnauthorizedException();
+		// }
+		await this.appService.uploadThumbnail(
+			id,
+			file.buffer,
+		);
+
+		return {
+			url: ``,
 		};
 	}
 
