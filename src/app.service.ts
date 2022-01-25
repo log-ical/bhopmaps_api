@@ -69,12 +69,16 @@ export class AppService {
 		const s3 = new S3();
 		for (let i = 0; i < maps.length; i++) {
 			await s3
-
 				.deleteObject({
 					Bucket: process.env.S3_BUCKET,
 					Key: `${maps[i].id}.zip`,
 				})
 				.promise();
+
+			await s3.deleteObject({
+				Bucket: process.env.S3_BUCKET,
+				Key: `images/${maps[i].id}.png`,
+			});
 			await this.mapRepository.delete(maps[i].id);
 		}
 		await this.userRepository.delete({ id });
@@ -82,19 +86,6 @@ export class AppService {
 	}
 
 	// * Map related functions
-
-	// async uploadThumbnailFile(fileBuffer: Buffer, filename: string) {
-	// 	const s3 = new S3();
-	// 	const fileKey = `${nanoid()}.png`;
-	// 	const params = {
-	// 		Bucket: process.env.S3_BUCKET,
-	// 		Key: fileKey,
-	// 		Body: fileBuffer,
-	// 		ContentType: 'image/png',
-	// 	};
-	// 	await s3.upload(params).promise();
-	// 	return fileKey;
-	// }
 
 	async uploadFile(dataBuffer: Buffer, filename: string) {
 		const s3 = new S3();
@@ -177,6 +168,11 @@ export class AppService {
 				Key: `${file.id}.zip`,
 			})
 			.promise();
+
+		await s3.deleteObject({
+			Bucket: process.env.S3_BUCKET,
+			Key: `images/${file.id}.png`,
+		});
 		await this.mapRepository.delete(fileId);
 	}
 
