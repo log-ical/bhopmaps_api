@@ -75,6 +75,13 @@ export class AppService {
 				})
 				.promise();
 
+			await s3
+				.deleteObject({
+					Bucket: process.env.S3_BUCKET,
+					Key: `${maps[i].id}.png`,
+				})
+				.promise();
+
 			await this.mapRepository.delete(maps[i].id);
 		}
 		await this.userRepository.delete({ id });
@@ -168,7 +175,7 @@ export class AppService {
 		await s3.deleteObject({
 			Bucket: process.env.S3_BUCKET,
 			Key: `${file.id}.png`,
-		})
+		});
 		await this.mapRepository.delete(fileId);
 	}
 
