@@ -144,13 +144,13 @@ export class AppService {
 			Key: fileKey,
 			Body: thumbnail,
 			ContentType: 'image/*',
+			ACL: 'public-read',
 		};
 		await s3.upload(params).promise();
 
-		const url = await s3.getSignedUrl('getObject', {
-			Bucket: process.env.S3_BUCKET,
-			Key: fileKey,
-			});
+
+
+		const url = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${fileKey}`;
 		return url;
 	}
 

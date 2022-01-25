@@ -216,43 +216,43 @@ export class AppController {
 		// @UploadedFile() thumbnail: Express.Multer.File,
 		@UploadedFiles() files: { thumbnail?: Express.Multer.File[], file?: Express.Multer.File[] },
 	) {
-		if (mapName.length < 5) {
-			throw new BadRequestException({
-				message: 'Map name must be at least 5 characters long',
-			});
-		}
+		// if (mapName.length < 5) {
+		// 	throw new BadRequestException({
+		// 		message: 'Map name must be at least 5 characters long',
+		// 	});
+		// }
 
-		if (mapName === null || description === null || files.thumbnail[0] === null) {
-			throw new BadRequestException({
-				message: 'Map name, description and thumbnail are required',
-			});
-		}
+		// if (mapName === null || description === null || files.thumbnail[0] === null) {
+		// 	throw new BadRequestException({
+		// 		message: 'Map name, description and thumbnail are required',
+		// 	});
+		// }
 
-		if (description.length > 1000) {
-			throw new BadRequestException({
-				message: 'Description can only be 1000 characters long',
-			});
-		}
+		// if (description.length > 1000) {
+		// 	throw new BadRequestException({
+		// 		message: 'Description can only be 1000 characters long',
+		// 	});
+		// }
 
-		if (!request.cookies['jwt']) {
-			throw new UnauthorizedException(
-				'You must be logged in to create a map',
-			);
-		}
-		// get user body information
-		const cookie = request.cookies['jwt'];
+		// if (!request.cookies['jwt']) {
+		// 	throw new UnauthorizedException(
+		// 		'You must be logged in to create a map',
+		// 	);
+		// }
+		// // get user body information
+		// const cookie = request.cookies['jwt'];
 
-		const data = await this.jwtService.verifyAsync(cookie);
-		if (!data) {
-			throw new UnauthorizedException();
-		}
+		// const data = await this.jwtService.verifyAsync(cookie);
+		// if (!data) {
+		// 	throw new UnauthorizedException();
+		// }
 
-		const user = await this.appService.findOne({ id: data['id'] });
-		if (!user) {
-			throw new UnauthorizedException({
-				message: 'User not found',
-			});
-		}
+		// const user = await this.appService.findOne({ id: data['id'] });
+		// if (!user) {
+		// 	throw new UnauthorizedException({
+		// 		message: 'User not found',
+		// 	});
+		// }
 
 		const dataBuffer = {
 			mapName,
@@ -260,13 +260,18 @@ export class AppController {
 			mapType: gameType,
 		};
 
+		const placeholder = {
+			username: 'user',
+			id: '1'
+		}
+
 		const map: any = await this.appService.uploadFile(files.file[0].buffer, mapName);
 		const thumbnailImage: any = await this.appService.uploadThumbnail(map.id.replace('.zip', ''), files.thumbnail[0].buffer);
 
 		await this.appService.addMap(
 			map.id.replace('.zip', ''),
-			user.username,
-			user.id,
+			placeholder.username,
+			placeholder.id,
 			dataBuffer.mapName,
 			thumbnailImage,
 			dataBuffer.description,
