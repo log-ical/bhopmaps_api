@@ -74,11 +74,27 @@ export class AppService {
 					Key: `${maps[i].id}.zip`,
 				})
 				.promise();
-
-			await s3.deleteObject({
+			const listParams = {
 				Bucket: process.env.S3_BUCKET,
-				Key: `images/${maps[i].id}.png`,
-			});
+				Prefix: 'images/',
+			};
+
+			
+
+			const listedObjects = await s3.listObjectsV2(listParams).promise();
+			if (listedObjects.Contents.length === 0) return;
+			const deleteParams = {
+				Bucket: process.env.S3_BUCKET,
+				Delete: {
+					Objects: [{}],
+					Quiet: false,
+				},
+			};
+			listedObjects.Contents.forEach(({ Key }) => {
+				const key = `${maps[i].id}.png`
+				deleteParams.Delete.Objects.push({ Key: key });
+			})
+
 			await this.mapRepository.delete(maps[i].id);
 		}
 		await this.userRepository.delete({ id });
@@ -168,11 +184,27 @@ export class AppService {
 				Key: `${file.id}.zip`,
 			})
 			.promise();
-
-		await s3.deleteObject({
+		const listParams = {
 			Bucket: process.env.S3_BUCKET,
-			Key: `images/${file.id}.png`,
-		});
+			Prefix: 'images/',
+		};
+
+		const listedObjects = await s3.listObjectsV2(listParams).promise();
+		if (listedObjects.Contents.length === 0) return;
+		const deleteParams = {
+			Bucket: process.env.S3_BUCKET,
+			Delete: {
+				Objects: [
+					{
+						Key: `${file.id}.png`,
+					},
+				],
+				Quiet: false,
+			},
+		};
+
+		await s3.deleteObjects(deleteParams).promise();
+
 		await this.mapRepository.delete(fileId);
 	}
 
