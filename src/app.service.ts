@@ -172,10 +172,12 @@ export class AppService {
 			})
 			.promise();
 
-		await s3.deleteObject({
-			Bucket: process.env.S3_BUCKET,
-			Key: `${file.id}.png`,
-		});
+		await s3
+			.deleteObject({
+				Bucket: process.env.S3_BUCKET,
+				Key: `${file.id}.png`,
+			})
+			.promise();
 		await this.mapRepository.delete(fileId);
 	}
 
