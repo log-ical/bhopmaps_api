@@ -101,8 +101,7 @@ export class AppService {
 				Key: `${nanoid(8)}.zip`,
 			})
 			.promise();
-;
-			const mapId = uploadResult.Key.replace('.zip', '');
+		const mapId = uploadResult.Key.replace('.zip', '');
 
 		const newFile = this.mapRepository.create({
 			id: mapId,
@@ -148,8 +147,6 @@ export class AppService {
 		};
 		await s3.upload(params).promise();
 
-
-
 		const url = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${fileKey}`;
 		return url;
 	}
@@ -184,7 +181,7 @@ export class AppService {
 	async downloadMap(id: string) {
 		const s3 = new S3();
 
-		const mapId = id
+		const mapId = id;
 		const file = await this.mapRepository.findOne({ id: mapId });
 		if (!file) {
 			return { message: 'Map not found' };
