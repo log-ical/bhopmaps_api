@@ -74,26 +74,6 @@ export class AppService {
 					Key: `${maps[i].id}.zip`,
 				})
 				.promise();
-			const listParams = {
-				Bucket: process.env.S3_BUCKET,
-				Prefix: 'images/',
-			};
-
-			
-
-			const listedObjects = await s3.listObjectsV2(listParams).promise();
-			if (listedObjects.Contents.length === 0) return;
-			const deleteParams = {
-				Bucket: process.env.S3_BUCKET,
-				Delete: {
-					Objects: [{}],
-					Quiet: false,
-				},
-			};
-			listedObjects.Contents.forEach(({ Key }) => {
-				const key = `${maps[i].id}.png`
-				deleteParams.Delete.Objects.push({ Key: key });
-			})
 
 			await this.mapRepository.delete(maps[i].id);
 		}
@@ -148,7 +128,7 @@ export class AppService {
 	// Upload thumbnail and update map thumbnail
 	async uploadThumbnail(id: string, thumbnail: Buffer) {
 		const s3 = new S3();
-		const fileKey = `images/${id}.png`;
+		const fileKey = `${id}.png`;
 		const params = {
 			Bucket: process.env.S3_BUCKET,
 			Key: fileKey,
@@ -184,27 +164,11 @@ export class AppService {
 				Key: `${file.id}.zip`,
 			})
 			.promise();
-		const listParams = {
+
+		await s3.deleteObject({
 			Bucket: process.env.S3_BUCKET,
-			Prefix: 'images/',
-		};
-
-		const listedObjects = await s3.listObjectsV2(listParams).promise();
-		if (listedObjects.Contents.length === 0) return;
-		const deleteParams = {
-			Bucket: process.env.S3_BUCKET,
-			Delete: {
-				Objects: [
-					{
-						Key: `${file.id}.png`,
-					},
-				],
-				Quiet: false,
-			},
-		};
-
-		await s3.deleteObjects(deleteParams).promise();
-
+			Key: `${file.id}.png`,
+		})
 		await this.mapRepository.delete(fileId);
 	}
 
